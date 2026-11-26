@@ -181,12 +181,15 @@ jobs:
             wallet/pnpm-lock.yaml
             network/pnpm-lock.yaml
       - name: Setup JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # The ubuntu runner image ships the Android SDK at $ANDROID_HOME; Gradle fetches the
+      # platform and build-tools it needs once the licences are accepted. (The setup-android
+      # action is not used: it requests the retired `tools` package and fails.)
+      - name: Accept Android SDK licences
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
       - name: Build network packages
         working-directory: network
         run: |
