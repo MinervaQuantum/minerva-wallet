@@ -1,0 +1,12 @@
+appId: build.minerva.wallet
+---
+- launchApp
+- tapOn: "Security"
+- tapOn: "Settings"
+- tapOn: "About"
+- assertVisible: "Version"
+- extendedWaitUntil:
+    visible:
+      text: "(Up to date|Update available|could not be checked).*"
+    timeout: 20000
+- back

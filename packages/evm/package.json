@@ -1,0 +1,24 @@
+{
+  "name": "@minerva/evm",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsx src/index.test.ts"
+  },
+  "dependencies": {
+    "@minerva/chain-config": "link:../../../network/packages/chain-config",
+    "@minerva/core": "workspace:*",
+    "@minerva/pq-crypto": "workspace:*",
+    "@minerva/pq-native-tx": "link:../../../network/packages/pq-native-tx",
+    "@minerva/sdk": "link:../../../network/packages/sdk",
+    "viem": "^2.57.10"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  }
+}

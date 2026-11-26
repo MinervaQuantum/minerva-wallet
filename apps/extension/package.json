@@ -1,0 +1,51 @@
+{
+  "name": "@minerva/extension",
+  "version": "0.2.1",
+  "private": true,
+  "displayName": "Minerva Wallet",
+  "description": "Minerva Wallet browser extension: a post-quantum (ML-DSA-65) smart account on the Minerva network.",
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "typecheck": "tsc --noEmit",
+    "testnet:acceptance": "NODE_OPTIONS=--conditions=import tsx scripts/testnet-acceptance.ts",
+    "package": "plasmo package"
+  },
+  "dependencies": {
+    "@minerva/chain-config": "link:../../../network/packages/chain-config",
+    "@minerva/core": "workspace:*",
+    "@minerva/evm": "workspace:*",
+    "@minerva/pq-crypto": "workspace:*",
+    "@minerva/pq-native-tx": "link:../../../network/packages/pq-native-tx",
+    "@minerva/sdk": "link:../../../network/packages/sdk",
+    "@minerva/ui-tokens": "workspace:*",
+    "@minerva/wallet-policy": "workspace:*",
+    "lucide-react": "^0.468.0",
+    "plasmo": "^0.89.5",
+    "qrcode": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "viem": "^2.57.10"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "autoprefixer": "^10.6.1",
+    "postcss": "^8.5.31",
+    "tailwindcss": "^3.4.19",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  },
+  "manifest": {
+    "host_permissions": [
+      "https://*/*",
+      "http://*/*"
+    ],
+    "permissions": [
+      "alarms",
+      "storage"
+    ]
+  }
+}

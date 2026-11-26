@@ -1,0 +1,16 @@
+appId: build.minerva.wallet
+---
+- launchApp
+- tapOn: "Security"
+- assertVisible: "Key Rotation"
+- assertVisible: "Device Keys"
+- assertVisible: "Recovery"
+- tapOn: "Key Rotation"
+- assertVisible: "Rotate"
+- back
+- tapOn: "Device Keys"
+- assertVisible: "Device"
+- back
+- tapOn: "Recovery"
+- assertVisible: "Recovery Kit"
+- back

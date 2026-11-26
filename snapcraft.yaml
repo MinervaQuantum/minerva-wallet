@@ -1,0 +1,101 @@
+name: minerva-wallet
+title: Minerva Wallet
+base: core24
+version: "0.0.27"
+summary: PQ-native Minerva Network wallet
+description: |
+  Minerva Wallet is the desktop wallet for Minerva Network. It creates and
+  manages Minerva Accounts, shows live MRV balances, and signs Minerva
+  transactions with PQ-native account control.
+license: Proprietary
+website: https://minervachain.org
+contact: https://testnet.minervachain.org
+
+grade: stable
+confinement: strict
+
+layout:
+  /usr/libexec/webkit2gtk-4.1:
+    symlink: $SNAP/usr/libexec/webkit2gtk-4.1
+  /usr/lib/x86_64-linux-gnu/webkit2gtk-4.1:
+    symlink: $SNAP/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1
+  /usr/lib/aarch64-linux-gnu/webkit2gtk-4.1:
+    symlink: $SNAP/usr/lib/aarch64-linux-gnu/webkit2gtk-4.1
+  /usr/lib/webkit2gtk-4.1/injected-bundle:
+    symlink: $SNAP/usr/lib/webkit2gtk-4.1/injected-bundle
+
+apps:
+  minerva-wallet:
+    command: usr/bin/minerva-wallet-desktop
+    desktop: usr/share/applications/minerva-wallet.desktop
+    extensions: [gnome]
+    plugs:
+      - network
+      - desktop
+      - desktop-legacy
+      - wayland
+      - x11
+      - opengl
+      - browser-support
+      - gsettings
+      - home
+
+parts:
+  minerva-wallet:
+    plugin: dump
+    source: .
+    build-snaps:
+      - node/20/stable
+      - rustup/latest/stable
+    build-packages:
+      - build-essential
+      - curl
+      - dpkg
+      - file
+      - libayatana-appindicator3-dev
+      - libdbus-1-dev
+      - libssl-dev
+      - libwebkit2gtk-4.1-dev
+      - libxdo-dev
+      - librsvg2-dev
+      - pkg-config
+      - wget
+    stage-packages:
+      - libayatana-appindicator3-1
+      - libglu1-mesa
+      - libsecret-1-0
+      - libwebkit2gtk-4.1-0
+    override-build: |
+      set -eux
+      export NPM_CONFIG_PREFIX="$HOME/.npm-global"
+      mkdir -p "$NPM_CONFIG_PREFIX"
+      export PATH="$NPM_CONFIG_PREFIX/bin:/snap/node/current/bin:/snap/rustup/current/bin:$HOME/.cargo/bin:$PATH"
+      npm install -g pnpm@10.18.2
+      rustup default stable
+      pnpm install --frozen-lockfile
+      pnpm --filter @minerva/desktop tauri build --bundles deb
+      dpkg -x apps/desktop/src-tauri/target/release/bundle/deb/*.deb "$SNAPCRAFT_PART_INSTALL/"
+      desktop_dir="$SNAPCRAFT_PART_INSTALL/usr/share/applications"
+      icon_dir="$SNAPCRAFT_PART_INSTALL/usr/share/pixmaps"
+      mkdir -p "$desktop_dir"
+      mkdir -p "$icon_dir"
+      cp apps/desktop/src-tauri/icons/icon.png "$icon_dir/minerva-wallet.png"
+      existing_desktop="$(find "$desktop_dir" -maxdepth 1 -type f -name "*.desktop" | head -n 1 || true)"
+      if [ -n "$existing_desktop" ]; then
+        cp "$existing_desktop" "$desktop_dir/minerva-wallet.desktop"
+        sed -i -e "s|^Name=.*|Name=Minerva Wallet|" \
+          -e "s|^Exec=.*|Exec=minerva-wallet|" \
+          -e "s|^Icon=.*|Icon=minerva-wallet|" \
+          "$desktop_dir/minerva-wallet.desktop"
+      else
+        cat > "$desktop_dir/minerva-wallet.desktop" <<'EOF'
+      [Desktop Entry]
+      Name=Minerva Wallet
+      Comment=PQ-native Minerva Network wallet
+      Exec=minerva-wallet
+      Icon=minerva-wallet
+      Terminal=false
+      Type=Application
+      Categories=Finance;
+      EOF
+      fi

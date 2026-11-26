@@ -1,0 +1,20 @@
+appId: build.minerva.wallet
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Minerva"
+- tapOn: "Create a new account"
+- assertVisible: "Passcode"
+- inputText: "246810"
+- tapOn: "Continue"
+- inputText: "246810"
+- tapOn: "Continue"
+- extendedWaitUntil:
+    visible: "Your address"
+    timeout: 60000
+- assertVisible:
+    text: "0x.*"
+- tapOn: "Continue"
+- assertVisible: "Recovery"
+- tapOn: "I understand"
+- assertVisible: "MINERVA ACCOUNT"

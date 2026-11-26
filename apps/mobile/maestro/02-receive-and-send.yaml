@@ -1,0 +1,16 @@
+appId: build.minerva.wallet
+---
+- launchApp
+- tapOn: "Receive"
+- assertVisible:
+    text: "0x.*"
+- back
+- tapOn: "Send"
+- tapOn: "Recipient"
+- inputText: "0x000000000000000000000000000000000000dEaD"
+- tapOn: "Amount"
+- inputText: "0.001"
+- tapOn: "Review"
+- assertVisible: "Transaction review"
+- assertVisible: "Simulation"
+- back

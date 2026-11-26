@@ -1,0 +1,15 @@
+{
+  "name": "@minerva/desktop",
+  "version": "0.2.1",
+  "private": true,
+  "scripts": {
+    "gen:icons": "tauri icon ../mobile/assets/icon.png",
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "build:windows-store": "tauri build --bundles msi,nsis",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.4"
+  }
+}

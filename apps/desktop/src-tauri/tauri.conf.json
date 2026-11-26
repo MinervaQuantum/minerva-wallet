@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Minerva Wallet",
+  "version": "0.2.1",
+  "identifier": "build.minerva.wallet",
+  "build": {
+    "frontendDist": "../../mobile/dist",
+    "beforeBuildCommand": "pnpm --filter @minerva/mobile build:web"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "Minerva Wallet",
+        "width": 420,
+        "height": 860,
+        "minWidth": 380,
+        "minHeight": 640,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "app",
+      "dmg",
+      "nsis",
+      "msi",
+      "appimage",
+      "deb"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "Finance",
+    "shortDescription": "Minerva Wallet: post-quantum smart account on Minerva",
+    "longDescription": "Minerva Wallet desktop: a post-quantum (ML-DSA-65) smart-account wallet for the Minerva network with device keys and recovery. Keys are stored in the OS keychain."
+  },
+  "plugins": {}
+}

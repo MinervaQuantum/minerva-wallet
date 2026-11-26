@@ -1,0 +1,51 @@
+{
+  "name": "minerva",
+  "private": true,
+  "version": "0.0.27",
+  "description": "Minerva monorepo: Minerva Network smart account wallet with PQ-native validation.",
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:mobile": "pnpm --filter @minerva/mobile dev",
+    "dev:extension": "pnpm --filter @minerva/extension dev",
+    "mobile:devnet-acceptance": "pnpm --filter @minerva/mobile devnet:acceptance",
+    "mobile:testnet-acceptance": "EXPO_PUBLIC_MINERVA_CHAIN_ID=77138 pnpm --filter @minerva/mobile devnet:acceptance",
+    "extension:testnet-acceptance": "pnpm --filter @minerva/extension testnet:acceptance",
+    "mobile:devnet-ui-smoke": "pnpm --filter @minerva/mobile devnet:ui-smoke",
+    "wallet:pq-vault:generate": "pnpm --filter @minerva/mobile pq-vault:generate",
+    "wallet:testnet-pq-vault:generate": "EXPO_PUBLIC_MINERVA_CHAIN_ID=77138 pnpm --filter @minerva/mobile pq-vault:generate",
+    "wallet:pq-native:acceptance": "bash scripts/pq-native-wallet-acceptance.sh",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "forge:build": "forge build --root packages/contracts",
+    "forge:test": "forge test --root packages/contracts",
+    "build:extension": "pnpm --filter @minerva/extension build && pnpm --filter @minerva/extension package",
+    "build:desktop": "pnpm --filter @minerva/desktop build",
+    "build:web": "pnpm --filter @minerva/mobile build:web",
+    "release:wallets": "bash scripts/release-wallets.sh",
+    "publish:wallets": "bash scripts/publish-wallets.sh"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-react-jsx": "^7.29.7",
+    "turbo": "^2.11.10",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "pnpm@10.18.2",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "esbuild",
+      "lmdb",
+      "msgpackr-extract",
+      "unrs-resolver"
+    ],
+    "overrides": {
+      "@minerva/sdk": "link:../network/packages/sdk",
+      "@minerva/pq-native-tx": "link:../network/packages/pq-native-tx",
+      "@minerva/chain-config": "link:../network/packages/chain-config"
+    }
+  }
+}
