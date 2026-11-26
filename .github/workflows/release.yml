@@ -199,11 +199,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Expo prebuild (android)
-        working-directory: apps/mobile
+        working-directory: wallet/apps/mobile
         run: pnpm exec expo prebuild -p android --no-install
 
       - name: Pin Android Kotlin toolchain
-        working-directory: apps/mobile/android
+        working-directory: wallet/apps/mobile/android
         run: |
           python3 - <<'PY'
           import pathlib
@@ -263,7 +263,7 @@ jobs:
           PY
 
       - name: Generate self-signed keystore
-        working-directory: apps/mobile/android
+        working-directory: wallet/apps/mobile/android
         run: |
           keytool -genkeypair -v -keystore release.keystore \
             -alias minerva -keyalg RSA -keysize 2048 -validity 10000 \
@@ -277,7 +277,7 @@ jobs:
           EOF
 
       - name: Wire release signing config
-        working-directory: apps/mobile/android
+        working-directory: wallet/apps/mobile/android
         run: |
           python3 - <<'PY'
           import re, pathlib
@@ -322,7 +322,7 @@ jobs:
           PY
 
       - name: Assemble release APK
-        working-directory: apps/mobile/android
+        working-directory: wallet/apps/mobile/android
         run: ./gradlew assembleRelease --no-daemon
 
       - name: Stage APK
