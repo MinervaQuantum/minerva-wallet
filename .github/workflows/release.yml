@@ -33,8 +33,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
-            artifact: macos
           - os: windows-latest
             artifact: windows
           - os: ubuntu-22.04
@@ -105,6 +103,73 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.artifact }}
+          path: wallet/out/*
+          if-no-files-found: error
+
+  desktop-macos:
+    # GitHub's Apple Silicon pool has repeatedly failed to pick the job up within its queue
+    # window, so macOS builds on the Intel image and is best-effort: a missing macOS bundle
+    # does not block the release. Re-run the job to attach it later.
+    name: desktop (macos-15-intel)
+    runs-on: macos-15-intel
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: wallet
+      - name: Checkout minerva-network (linked packages)
+        uses: actions/checkout@v4
+        with:
+          repository: MinervaQuantum/minerva-network
+          ref: main
+          path: network
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: |
+            wallet/pnpm-lock.yaml
+            network/pnpm-lock.yaml
+
+      - name: Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build network packages
+        working-directory: network
+        run: |
+          pnpm install --frozen-lockfile --filter "./packages/**"
+          pnpm --filter "./packages/**" run build
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build desktop bundles
+        uses: tauri-apps/tauri-action@v0
+        with:
+          projectPath: wallet/apps/desktop
+          # beforeBuildCommand in tauri.conf.json runs the Expo web export.
+
+      - name: Collect installers
+        shell: bash
+        run: |
+          mkdir -p out
+          base=apps/desktop/src-tauri/target/release/bundle
+          find "$base" -type f \
+            \( -name '*.dmg' -o -name '*.app.tar.gz' -o -name '*.msi' \
+               -o -name '*.exe' -o -name '*.AppImage' -o -name '*.deb' \) \
+            -exec cp {} out/ \; || true
+          ls -la out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-macos
           path: wallet/out/*
           if-no-files-found: error
 
@@ -339,10 +404,10 @@ jobs:
 
   release:
     name: publish release + checksums
-    # Wait for Android too so a successful APK is present before publishing.
-    # Android is still best-effort (`continue-on-error: true`), while desktop
-    # + extension remain the hard gates for a public release.
-    needs: [desktop, extension, android]
+    # Windows + Ubuntu desktop and the extension are the hard gates. macOS and
+    # Android are best-effort (`continue-on-error: true`): their artifacts are
+    # attached when their jobs succeed and never block the release.
+    needs: [desktop, desktop-macos, extension, android]
     if: ${{ always() && needs.desktop.result == 'success' && needs.extension.result == 'success' }}
     runs-on: ubuntu-22.04
     steps:
@@ -364,7 +429,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${GITHUB_REF_NAME}"
-          NOTES="Desktop installers (macOS / Windows / Ubuntu) and the Chrome MV3 extension. A self-signed Android APK is attached when its build succeeds (sideload-test only).
+          NOTES="Desktop installers (Windows / Ubuntu, plus macOS when its runner was available) and the Chrome MV3 extension. A self-signed Android APK is attached when its build succeeds (sideload-test only).
 
           **Unsigned builds** — macOS Gatekeeper / Windows SmartScreen will warn. Verify downloads against \`SHA256SUMS\`. See docs/PUBLISHING.md."
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
