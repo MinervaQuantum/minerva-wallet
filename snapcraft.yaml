@@ -1,13 +1,13 @@
 name: minerva-wallet
 title: Minerva Wallet
 base: core24
-version: "0.0.27"
+version: "0.2.1"
 summary: PQ-native Minerva Network wallet
 description: |
   Minerva Wallet is the desktop wallet for Minerva Network. It creates and
   manages Minerva Accounts, shows live MRV balances, and signs Minerva
   transactions with PQ-native account control.
-license: Proprietary
+license: MIT
 website: https://minervachain.org
 contact: https://testnet.minervachain.org
 

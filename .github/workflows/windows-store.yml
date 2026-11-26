@@ -1,7 +1,8 @@
 name: Windows Store
 
-# In the MErva monorepo this workflow runs from wallet/ (network/ is a sibling that the
-# pnpm `link:` overrides point at).
+# Layout: this repository is checked out under wallet/ and MinervaQuantum/minerva-network under
+# network/, because the pnpm `link:` overrides in package.json point at ../network/packages/*.
+# The network packages are built before the wallet install so their dist/ exists.
 defaults:
   run:
     working-directory: wallet
@@ -12,7 +13,7 @@ on:
       release_tag:
         description: GitHub Release tag to attach the Windows Store installers to.
         required: true
-        default: v0.0.27
+        default: v0.2.1
         type: string
       upload_to_release:
         description: Attach the built installers to the GitHub Release.
@@ -32,6 +33,14 @@ jobs:
       WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: wallet
+      - name: Checkout minerva-network (linked packages)
+        uses: actions/checkout@v4
+        with:
+          repository: MinervaQuantum/minerva-network
+          ref: main
+          path: network
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -43,10 +52,18 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-          cache-dependency-path: wallet/pnpm-lock.yaml
+          cache-dependency-path: |
+            wallet/pnpm-lock.yaml
+            network/pnpm-lock.yaml
 
       - name: Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Build network packages
+        working-directory: network
+        run: |
+          pnpm install --frozen-lockfile --filter "./packages/**"
+          pnpm --filter "./packages/**" run build
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

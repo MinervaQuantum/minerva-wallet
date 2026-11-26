@@ -12,8 +12,9 @@
 
 name: Release
 
-# In the MErva monorepo this workflow runs from wallet/ (network/ is a sibling that the
-# pnpm `link:` overrides point at).
+# Layout: this repository is checked out under wallet/ and MinervaQuantum/minerva-network under
+# network/, because the pnpm `link:` overrides in package.json point at ../network/packages/*.
+# The network packages are built before the wallet install so their dist/ exists.
 defaults:
   run:
     working-directory: wallet
@@ -41,6 +42,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: wallet
+      - name: Checkout minerva-network (linked packages)
+        uses: actions/checkout@v4
+        with:
+          repository: MinervaQuantum/minerva-network
+          ref: main
+          path: network
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -52,7 +61,9 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-          cache-dependency-path: wallet/pnpm-lock.yaml
+          cache-dependency-path: |
+            wallet/pnpm-lock.yaml
+            network/pnpm-lock.yaml
 
       - name: Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -64,6 +75,12 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev \
             librsvg2-dev patchelf libsecret-1-dev libdbus-1-dev pkg-config \
             build-essential
+
+      - name: Build network packages
+        working-directory: network
+        run: |
+          pnpm install --frozen-lockfile --filter "./packages/**"
+          pnpm --filter "./packages/**" run build
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -96,6 +113,14 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: wallet
+      - name: Checkout minerva-network (linked packages)
+        uses: actions/checkout@v4
+        with:
+          repository: MinervaQuantum/minerva-network
+          ref: main
+          path: network
       - uses: pnpm/action-setup@v4
         with:
           version: 10.18.2
@@ -103,7 +128,15 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-          cache-dependency-path: wallet/pnpm-lock.yaml
+          cache-dependency-path: |
+            wallet/pnpm-lock.yaml
+            network/pnpm-lock.yaml
+      - name: Build network packages
+        working-directory: network
+        run: |
+          pnpm install --frozen-lockfile --filter "./packages/**"
+          pnpm --filter "./packages/**" run build
+
       - run: pnpm install --frozen-lockfile
       - name: Build + package extension
         run: |
@@ -129,6 +162,14 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: wallet
+      - name: Checkout minerva-network (linked packages)
+        uses: actions/checkout@v4
+        with:
+          repository: MinervaQuantum/minerva-network
+          ref: main
+          path: network
       - uses: pnpm/action-setup@v4
         with:
           version: 10.18.2
@@ -136,7 +177,9 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-          cache-dependency-path: wallet/pnpm-lock.yaml
+          cache-dependency-path: |
+            wallet/pnpm-lock.yaml
+            network/pnpm-lock.yaml
       - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
@@ -144,6 +187,12 @@ jobs:
           java-version: 17
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+      - name: Build network packages
+        working-directory: network
+        run: |
+          pnpm install --frozen-lockfile --filter "./packages/**"
+          pnpm --filter "./packages/**" run build
+
       - run: pnpm install --frozen-lockfile
 
       - name: Expo prebuild (android)

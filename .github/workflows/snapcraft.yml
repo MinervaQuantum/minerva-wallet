@@ -1,7 +1,9 @@
 name: Snapcraft
 
-# In the MErva monorepo this workflow runs from wallet/ (network/ is a sibling that the
-# pnpm `link:` overrides point at).
+# Manual only. snapcraft builds from this directory alone, so the pnpm `link:` overrides that
+# point at ../network/packages/* (the MinervaQuantum/minerva-network repository) cannot resolve
+# inside the build container; the snap recipe needs those packages vendored before this can run on
+# tags again. Linux users get the .deb and AppImage from the Release workflow meanwhile.
 defaults:
   run:
     working-directory: wallet
@@ -24,8 +26,6 @@ on:
         required: true
         default: false
         type: boolean
-  push:
-    tags: ["v*"]
 
 permissions:
   contents: read
@@ -36,10 +36,14 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: wallet
 
       - name: Build snap
         uses: snapcore/action-build@v1
         id: snapcraft
+        with:
+          path: wallet
 
       - name: Upload snap artifact
         uses: actions/upload-artifact@v4
